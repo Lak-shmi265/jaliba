@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Browser</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 20px;
+        }
+
+        .genre-filter {
+            margin-bottom: 20px;
+        }
+
+        .genre-button {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 20px;
+            background-color: #e0e0e0;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .genre-button.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .movie-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .movie-info {
+            padding: 15px;
+        }
+
+        .movie-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .movie-genres {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .movie-rating {
+            color: #ffa500;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Movie Browser</h1>
+        </div>
+        
+        <div class="genre-filter" id="genreFilter"></div>
+        <div class="movies-grid" id="moviesGrid"></div>
+    </div>
+
+    <script>
+        // Mock movie data - replace this with actual API call
+        const movies = [
+            {
+                id: 1,
+                title: "The Shawshank Redemption",
+                year: 1994,
+                genres: ["Drama"],
+                rating: 9.3,
+                poster: "/api/placeholder/250/300",
+                description: "Two imprisoned men bond over a number of years..."
+            },
+            {
+                id: 2,
+                title: "The Dark Knight",
+                year: 2008,
+                genres: ["Action", "Crime", "Drama"],
+                rating: 9.0,
+                poster: "/api/placeholder/250/300",
+                description: "When the menace known as the Joker wreaks havoc..."
+            },
+            {
+                id: 3,
+                title: "Inception",
+                year: 2010,
+                genres: ["Action", "Adventure", "Sci-Fi"],
+                rating: 8.8,
+                poster: "/api/placeholder/250/300",
+                description: "A thief who steals corporate secrets..."
+            },
+            {
+                id: 4,
+                title: "Pulp Fiction",
+                year: 1994,
+                genres: ["Crime", "Drama"],
+                rating: 8.9,
+                poster: "/api/placeholder/250/300",
+                description: "The lives of two mob hitmen, a boxer..."
+            },
+            {
+                id: 5,
+                title: "The Matrix",
+                year: 1999,
+                genres: ["Action", "Sci-Fi"],
+                rating: 8.7,
+                poster: "/api/placeholder/250/300",
+                description: "A computer programmer discovers a mysterious world..."
+            }
+        ];
+
+        // Get all unique genres
+        const allGenres = Array.from(new Set(movies.reduce(function(acc, movie) {
+            return acc.concat(movie.genres);
+        }, []))).sort();
+        
+        let selectedGenres = new Set();
+
+        // Create genre filter buttons
+        const genreFilter = document.getElementById('genreFilter');
+        allGenres.forEach(function(genre) {
+            const button = document.createElement('button');
+            button.className = 'genre-button';
+            button.textContent = genre;
+            button.addEventListener('click', function() {
+                toggleGenre(genre, button);
+            });
+            genreFilter.appendChild(button);
+        });
+
+        // Toggle genre selection
+        function toggleGenre(genre, button) {
+            if (selectedGenres.has(genre)) {
+                selectedGenres.delete(genre);
+                button.classList.remove('active');
+            } else {
+                selectedGenres.add(genre);
+                button.classList.add('active');
+            }
+            updateMovies();
+        }
+
+        // Update movies display
+        function updateMovies() {
+            const moviesGrid = document.getElementById('moviesGrid');
+            moviesGrid.innerHTML = '';
+
+            const filteredMovies = selectedGenres.size === 0 
+                ? movies 
+                : movies.filter(function(movie) {
+                    return movie.genres.some(function(genre) {
+                        return selectedGenres.has(genre);
+                    });
+                });
+
+            filteredMovies.forEach(function(movie) {
+                const movieCard = document.createElement('div');
+                movieCard.className = 'movie-card';
+                movieCard.innerHTML = `
+                    <img class="movie-poster" src="${movie.poster}" alt="${movie.title}">
+                    <div class="movie-info">
+                        <div class="movie-title">${movie.title} (${movie.year})</div>
+                        <div class="movie-genres">${movie.genres.join(', ')}</div>
+                        <div class="movie-rating">★ ${movie.rating}</div>
+                    </div>
+                `;
+                moviesGrid.appendChild(movieCard);
+            });
+        }
+
+        // Initial display
+        updateMovies();
+    </script>
+</body>
+</html>
